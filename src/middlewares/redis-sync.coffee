@@ -24,8 +24,8 @@ class Sync
   onMessage: (channel, message) =>
     resourceChange = JSON.parse(message)
     @_i18n.change(
-      resourceChange.namespace,
       resourceChange.language,
+      resourceChange.namespace,
       resourceChange.key,
       resourceChange.value,
       false

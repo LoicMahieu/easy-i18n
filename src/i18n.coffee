@@ -12,6 +12,7 @@ class I18n extends events.EventEmitter
   @sequelizeBackend = require './middlewares/sequelize-backend'
   @loggerConsole = require './middlewares/logger-console'
   @express = require './middlewares/express'
+  @fallback = require './middlewares/fallback-translate'
 
   ## Language detection
   detection = require './detection'
@@ -37,9 +38,6 @@ class I18n extends events.EventEmitter
 
   ## Translation handling
 
-  ns: (ns) ->
-    @namespaces[ns]
-
   load: (language, ns, cb) ->
     if @namespaces[ns]?[language]
       return cb(null)
@@ -50,23 +48,29 @@ class I18n extends events.EventEmitter
     @backend.load language, ns, (err, resources) =>
       return cb(err) if err
 
-      @namespaces?[ns] = {}
+      @namespaces[ns] = {} unless @namespaces[ns]
+      @namespaces[ns][language] = {} unless @namespaces[ns][language]
       @namespaces[ns][language] = resources
       @emit 'nsLoaded', language, ns, resources
       cb(null, resources)
 
     @
 
-  unload: (ns) ->
-    # todo?
+  translate: (language, ns, key, options = {}) ->
+    options.missing = true unless options.missing == false
 
-  translate: (language, ns, key) ->
     res = @namespaces[ns]?[language]?[key]
 
-    @emit 'missing', language, ns, key unless res
     @emit 'translate', language, ns, key, res if res
 
-    res || language + '/' + ns + ':' + key
+    if res or not options.missing
+      return res
+    else
+      return @missing(language, ns, key)
+
+  missing: (language, ns, key) ->
+    @emit 'missing', language, ns, key
+    language + '/' + ns + ':' + key
 
   change: (language, ns, key, value, propagateEvent = true, cb = noop) ->
     if typeof propagateEvent == 'function'
