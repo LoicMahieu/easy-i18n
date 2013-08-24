@@ -19,6 +19,12 @@ module.exports = (sequelize, DataTypes) ->
         notNull: true
         notEmpty: true
 
+    namespace:
+      type: DataTypes.STRING
+      validate:
+        notNull: true
+        notEmpty: true
+
     used:
       type: DataTypes.BIGINT
       defaultValue: 0

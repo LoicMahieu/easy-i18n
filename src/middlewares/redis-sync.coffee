@@ -13,8 +13,9 @@ class Sync
 
     @_sub.subscribe @_options.channel
 
-  onChange: (language, key, value) =>
+  onChange: (language, namespace, key, value) =>
     @_pub.publish @_options.channel, JSON.stringify(
+      namespace: namespace
       language: language
       key: key
       value: value
@@ -23,6 +24,7 @@ class Sync
   onMessage: (channel, message) =>
     resourceChange = JSON.parse(message)
     @_i18n.change(
+      resourceChange.namespace,
       resourceChange.language,
       resourceChange.key,
       resourceChange.value,

@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "logger-console.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "src/middlewares/logger-console.coffee"
+  ],
+  "names": [],
+  "mappings": ";AACA;CAAA,KAAA,CAAA;;CAAA,CAAA,CAAU,IAAV,EAAU;;CAAV,CAEA,CAAiB,GAAX,CAAN,EAAkB;GAChB,CAAA,KAAC,EAAD;CACO,CAAuC,CAA5C,CAAI,EAAO,CAAY,GAAW,GAAlC;CAFa,IACf;CAHF,EAEiB;CAFjB"
+}

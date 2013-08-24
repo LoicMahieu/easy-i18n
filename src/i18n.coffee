@@ -3,10 +3,15 @@ events = require 'events'
 winston = require 'winston'
 _ = require 'lodash'
 
+noop = () ->
+
+
 class I18n extends events.EventEmitter
   ## Middlewares
   @redisSync = require './middlewares/redis-sync'
   @sequelizeBackend = require './middlewares/sequelize-backend'
+  @loggerConsole = require './middlewares/logger-console'
+  @express = require './middlewares/express'
 
   ## Language detection
   detection = require './detection'
@@ -16,19 +21,15 @@ class I18n extends events.EventEmitter
     unless @ instanceof I18n
       return new I18n(options)
 
-    @_options = _.extend(
+    @options = _.extend(
       supported_languages: ['fr', 'nl', 'en']
       default_language: 'fr'
-      locale_on_url: true
     , options)
 
     # Logger
     @logger = new winston.Logger()
 
     @namespaces = {}
-
-    ## Express/Connect middleware
-    @middleware = require('./express').bind(@)
 
   use: (middleware) ->
     middleware(@)
@@ -39,19 +40,19 @@ class I18n extends events.EventEmitter
   ns: (ns) ->
     @namespaces[ns]
 
-  loadNS: (ns, language, cb) ->
+  load: (language, ns, cb) ->
     if @namespaces[ns]?[language]
       return cb(null)
 
     unless @backend
       throw new Error("No backend is provided.")
 
-    @backend.load namespace, language, (err, resources) =>
+    @backend.load language, ns, (err, resources) =>
       return cb(err) if err
 
       @namespaces?[ns] = {}
       @namespaces[ns][language] = resources
-      @emit 'nsLoaded', namespace, language, resources
+      @emit 'nsLoaded', language, ns, resources
       cb(null, resources)
 
     @
@@ -59,24 +60,26 @@ class I18n extends events.EventEmitter
   unload: (ns) ->
     # todo?
 
-  translate: (ns, language, key) ->
+  translate: (language, ns, key) ->
     res = @namespaces[ns]?[language]?[key]
 
-    @emit 'missing', language, key unless res
-    @emit 'translate', language, key, res if res
+    @emit 'missing', language, ns, key unless res
+    @emit 'translate', language, ns, key, res if res
 
-    res || key
+    res || language + '/' + ns + ':' + key
 
-  change: (ns, language, key, value, propagateEvent = true, cb) ->
+  change: (language, ns, key, value, propagateEvent = true, cb = noop) ->
     if typeof propagateEvent == 'function'
       cb = propagateEvent
       propagateEvent = true
 
-    @load ns, language, (err) =>
-      return cb(err) if err
+    @load language, ns, (err) =>
+      if err
+        @logger.warn err
+        return cb(err)
       
       @namespaces[ns][language][key] = value
-      @emit 'change', language, key, value if propagateEvent
+      @emit 'change', language, ns, key, value if propagateEvent
       
       cb(null)
     @
@@ -85,6 +88,6 @@ class I18n extends events.EventEmitter
     @emit 'dispose'
     @backend = null
     @resource = null
-    @_options = null
+    @options = null
 
 module.exports = I18n
