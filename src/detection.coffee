@@ -13,7 +13,7 @@ module.exports =
     # pl,fr-FR;q=0.3,en-US;q=0.1
 
     if not header or not header.split
-      return [] 
+      return []
 
     raw_langs = header.split(",")
 

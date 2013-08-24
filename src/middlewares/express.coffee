@@ -61,7 +61,7 @@ class I18nExpress
     keys = key.split ':'
     
     if keys < 2
-      throw 'Invalid key'
+      throw new Error('Invalid translation key: ', key)
 
     part = keys.shift().split('/')
     if part.length < 2
