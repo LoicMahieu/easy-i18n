@@ -46,13 +46,14 @@ module.exports = function (grunt) {
     },
     clean: {
       src: ['lib'],
-      test: ['test/*.js']
+      test: ['test_lib'],
+      coverage: ['coverage.html']
     },
     mochaTest: {
       test: {
         options: {
           reporter: 'list',
-          //require: 'coverage/blanket'
+          require: 'blanket'
         },
         src: ['test_lib/**/*.js']
       },
