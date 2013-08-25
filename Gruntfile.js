@@ -7,8 +7,12 @@ module.exports = function (grunt) {
   grunt.initConfig({
     watch: {
       coffeelint: {
-        files: 'lib/**/*.js',
-        tasks: ['coffeelint', 'coffee']
+        files: 'src/**/*.coffee',
+        tasks: ['coffeelint:src', 'coffee:src']
+      },
+      test: {
+        files: 'test/*.coffee',
+        tasks: ['coffeelint:test', 'coffee:test', 'mochaTest']
       }
     },
     coffeelint: {
@@ -17,19 +21,32 @@ module.exports = function (grunt) {
           value: 100
         }
       },
-      all: [
+      src: [
         'src/**/*.coffee'
+      ],
+      test: [
+        'test/*.coffee'
       ]
     },
     coffee: {
       src: {
         expand: true,
-        flatten: true,
         cwd: 'src',
         src: ['**/*.coffee'],
         dest: 'lib',
         ext: '.js'
+      },
+      test: {
+        expand: true,
+        cwd: 'test',
+        src: ['**/*.coffee'],
+        dest: 'test_lib',
+        ext: '.js'
       }
+    },
+    clean: {
+      src: ['lib'],
+      test: ['test/*.js']
     },
     mochaTest: {
       test: {
@@ -37,33 +54,36 @@ module.exports = function (grunt) {
           reporter: 'list',
           //require: 'coverage/blanket'
         },
-        src: ['test/**/*.js']
+        src: ['test_lib/**/*.js']
       },
       coverage: {
         options: {
           reporter: 'html-cov',
           // use the quiet flag to suppress the mocha console output
-          quiet: true
+          quiet: true,
+          // specify a destination file to capture the mocha
+          // output (the quiet option does not suppress this)
+          captureFile: 'coverage.html'
         },
-        src: ['test/**/*.js'],
-        // specify a destination file to capture the mocha
-        // output (the quiet option does not suppress this)
-        dest: 'coverage.html'
+        src: ['test_lib/**/*.js']
       }
     },
   });
 
   grunt.registerTask('test', [
-    'coffeelint',
-    'mochaTest'
+    'compile',
+    'mochaTest',
+    'clean:test'
   ]);
 
   grunt.registerTask('compile', [
+    'clean',
     'coffeelint',
     'coffee'
   ]);
 
   grunt.registerTask('default', [
-    'jshint'
+    'test',
+    'watch'
   ]);
 };

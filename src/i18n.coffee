@@ -25,12 +25,13 @@ class I18n extends events.EventEmitter
     @options = _.extend(
       supported_languages: ['fr', 'nl', 'en']
       default_language: 'fr'
+      resources: null
     , options)
 
     # Logger
     @logger = new winston.Logger()
 
-    @namespaces = {}
+    @namespaces = @options.resources or {}
 
   use: (middleware) ->
     middleware(@)

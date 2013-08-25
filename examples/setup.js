@@ -7,7 +7,7 @@ module.exports = function (callback) {
 
   var Sequelize = require('sequelize');
 
-  var I18n = require('./index');
+  var I18n = require('../index');
 
   var sequelize = new Sequelize('test', 'root', '');
 
