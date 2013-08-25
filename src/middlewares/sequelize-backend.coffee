@@ -4,6 +4,15 @@ class Backend
     @_i18n.on 'change', @saveChange
     @_i18n.on 'translate', @increment if @_options.increment
 
+  _findAll: (language, ns, key) ->
+    where =
+      namespace: ns
+      language: language
+
+    where.key = key if key
+    
+    @_model.findAll(where: where)
+
   _find: (language, ns, key) ->
     where =
       namespace: ns
@@ -17,15 +26,14 @@ class Backend
     @_i18n.logger.error err if err
 
   load: (language, ns, cb) ->
-    @_find(ns, language).done (err, models) =>
+    @_findAll(language, ns).done (err, models) =>
       return @_catchError err if err
 
       res = {}
       
       if models
         for model in models
-          res[model.language] = {} unless res[model.language]
-          res[model.language][model.key] = model.value
+          res[model.key] = model.value
 
       cb(null, res)
 

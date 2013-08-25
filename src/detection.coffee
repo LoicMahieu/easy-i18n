@@ -51,6 +51,9 @@ module.exports =
 
     defaultLanguage
 
+  isSupported: (language, supported_languages) ->
+    supported_languages.indexOf(language) > 0
+
 
   # Given a language code, return a locale code the OS understands.
   # language: en-US
