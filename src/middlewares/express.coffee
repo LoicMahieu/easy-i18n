@@ -55,15 +55,15 @@ class I18nExpress extends EventEmitter
       _i18n: @i18n
       translate: @translate
 
-    Object.defineProperty @req.i18n, 'language', 
+    Object.defineProperty @req.i18n, 'language',
       get: () => _language
-      set: (v) => 
+      set: (v) =>
         _language = v
         @setCookie()
         @emit 'languageChange', _language
 
     if @options.preloadNamespaces and @options.preloadLanguages
-      return preload @i18n, @options.preloadNamespaces, @options.preloadLanguages, () => 
+      return preload @i18n, @options.preloadNamespaces, @options.preloadLanguages, () =>
         @defineLanguage()
         @next()
 

@@ -26,7 +26,7 @@ module.exports = function (grunt) {
         expand: true,
         flatten: true,
         cwd: 'src',
-        src: ['**.coffee'],
+        src: ['**/*.coffee'],
         dest: 'lib',
         ext: '.js'
       }
@@ -58,8 +58,9 @@ module.exports = function (grunt) {
     'mochaTest'
   ]);
 
-  grunt.registerTask('server', [
-    'nodemon:dev'
+  grunt.registerTask('compile', [
+    'coffeelint',
+    'coffee'
   ]);
 
   grunt.registerTask('default', [
