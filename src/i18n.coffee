@@ -29,7 +29,7 @@ class I18n extends events.EventEmitter
     , options)
 
     # Logger
-    @logger = new winston.Logger()
+    @logger = @options.logger or new winston.Logger()
 
     @namespaces = @options.resources or {}
 
