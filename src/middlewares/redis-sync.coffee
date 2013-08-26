@@ -1,12 +1,10 @@
 
-redis = require('redis')
-
 class Sync
   constructor: (@_options = {}, @_i18n) ->
     @_options.channel = 'i18n-redis-sync' unless @_options.channel
 
-    @_pub = @_options.pubClient || redis.createClient()
-    @_sub = @_options.subClient || redis.createClient()
+    @_pub = @_options.pubClient || require('redis').createClient()
+    @_sub = @_options.subClient || require('redis').createClient()
 
     @_sub.on 'message', @onMessage
     @_i18n.on 'change', @onChange
