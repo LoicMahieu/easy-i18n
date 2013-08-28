@@ -22,12 +22,14 @@ class Backend
     
     @_model.find(where: where)
 
-  _catchError: (err) =>
-    @_i18n.logger.error err if err
+  _catchError: (err, cb) =>
+    if err
+      @_i18n.logger.error err
+      cb?(err)
 
   load: (language, ns, cb) ->
     @_findAll(language, ns).done (err, models) =>
-      return @_catchError err if err
+      return @_catchError err, cb if err
 
       res = {}
       
@@ -52,6 +54,7 @@ class Backend
       model.save().done @_catchError
 
   dispose: ->
+    # todo: sequelize stop
     @_model = null
     @_i18n = null
     @_options = null

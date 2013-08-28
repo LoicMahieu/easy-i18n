@@ -58,12 +58,16 @@ class I18nExpress extends EventEmitter
     Object.defineProperty @req.i18n, 'language',
       get: () => _language
       set: (v) =>
+        prev = _language
         _language = v
-        @setCookie()
-        @emit 'languageChange', _language
+        if prev != _language
+          @setCookie()
+          @emit 'languageChange', _language
 
-    if @options.preloadNamespaces and @options.preloadLanguages
-      return preload @i18n, @options.preloadNamespaces, @options.preloadLanguages, () =>
+    @req.i18n.lang = @req.i18n.language
+
+    if @options.preload_namespaces.length and @options.preload_languages.length
+      return preload @i18n, @options.preload_namespaces, @options.preload_languages, () =>
         @defineLanguage()
         @next()
 
@@ -84,13 +88,18 @@ class I18nExpress extends EventEmitter
   defineLanguage: () =>
     lang = null
 
+    unless @options.supported_languages and @options.supported_languages.length
+      return
+
     # Determine language
     if @options.locale_on_url
       lang = checkUrlLocale @req, @options.supported_languages
 
       # Redirect if language missing
       if @options.redirect_on_missing_on_url and not lang
-        @res.redirect('/' + @bestLanguage() + @req.url)
+        # TODO: Find another trick to don't trigger next middleware :(
+        @next = () ->
+        return @res.redirect('/' + @bestLanguage() + @req.url)
       else if not lang
         lang = @bestLanguage()
 
@@ -136,12 +145,41 @@ class I18nExpress extends EventEmitter
 
 module.exports = (options) ->
   (i18n) ->
+    options = _.extend(
+      supported_languages: ['en']
+      default_language: 'en'
+      locale_on_url: false
+      redirect_on_missing_on_url: false
+      cookie_name: null
+      preload_namespaces: []
+      preload_languages: []
+    , options)
+
     i18n.express = (req, res, next) ->
-      options = _.extend(
-        supported_languages: ['en']
-        default_language: 'en'
-        locale_on_url: false
-        redirect_on_missing_on_url: false
-        cookie_name: null
-      , options)
       new I18nExpress(req, res, next, options, i18n)
+
+    i18n.express.load = (ns, languages) ->
+      _ns = if _.isArray(ns) then ns else [ ns ]
+
+      (req, res, next) ->
+        lngs = languages or req.i18n.language or options.supported_languages
+        lngs = [ lngs ] unless _.isArray(lngs)
+
+        loadLanguages = (ns, done) ->
+          async.each lngs, ((lang, cb) ->
+            i18n.load(lang, ns, cb)
+          ), done
+
+        async.each(_ns, loadLanguages, (err) ->
+          if err
+            i18n.logger.error(err)
+            next(err)
+
+          i18n.logger.debug(
+            "Express: end loading" +
+            " Namespaces:#{_ns.join(', ')}" +
+            " Languages: #{lngs.join(', ')}"
+          )
+          next()
+        )
+

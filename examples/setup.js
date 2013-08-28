@@ -11,8 +11,7 @@ module.exports = function (callback) {
 
   var sequelize = new Sequelize('test', 'root', '');
 
-  var i18n = I18n({
-    })
+  var i18n = I18n({})
     .use(I18n.loggerConsole())
     .use(I18n.sequelizeBackend(sequelize))
     .use(I18n.redisSync())
@@ -22,8 +21,8 @@ module.exports = function (callback) {
       locale_on_url: true,
       redirect_on_missing_on_url: true,
       cookie_name: 'locale',
-      preloadNamespaces: ['home'],
-      preloadLanguages: ['fr', 'nl']
+      preload_namespaces: ['home'],
+      preload_languages: ['fr', 'nl']
     }))
     .use(I18n.fallback({
       fallback_language: 'fr'

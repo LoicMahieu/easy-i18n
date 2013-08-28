@@ -78,9 +78,9 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('compile', [
-    'clean',
-    'coffeelint',
-    'coffee'
+    'clean:src',
+    'coffeelint:src',
+    'coffee:src'
   ]);
 
   grunt.registerTask('default', [
