@@ -98,7 +98,7 @@ class I18nExpress extends EventEmitter
       lang = checkUrlLocale @req, @options.supported_languages
 
       # Redirect if language missing
-      if @options.redirect_on_missing_on_url and not lang
+      if @options.redirect_on_missing_on_url and not lang and @req.method == 'GET'
         # TODO: Find another trick to don't trigger next middleware :(
         @next = () ->
         return @res.redirect('/' + @bestLanguage() + @req.url)
