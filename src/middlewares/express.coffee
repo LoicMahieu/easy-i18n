@@ -54,6 +54,8 @@ class I18nExpress extends EventEmitter
     @req.i18n =
       _i18n: @i18n
       translate: @translate
+      load: (ns, languages, cb) =>
+        @i18n.express.load(ns, languages)(@req, @res, cb)
 
     Object.defineProperty @req.i18n, 'language',
       get: () => _language
