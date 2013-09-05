@@ -15,9 +15,6 @@ module.exports = (sequelize, DataTypes) ->
 
     value:
       type: DataTypes.STRING(1000)
-      validate:
-        notNull: true
-        notEmpty: true
 
     namespace:
       type: DataTypes.STRING

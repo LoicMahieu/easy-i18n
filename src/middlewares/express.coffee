@@ -34,6 +34,13 @@ preload = (i18n, nss, langs, cb) ->
 
   async.parallel tasks, cb
 
+isValidKey = (key) ->
+  keys = key.split ':'
+  if keys < 2
+    return false
+  else
+    return true
+
 parseTranslationKey = (key, defaultLang) ->
   # language/namespace:key
   # namespace:key
@@ -53,20 +60,29 @@ class I18nExpress extends EventEmitter
     _language = ''
     @req.i18n =
       _i18n: @i18n
+      isValidKey: isValidKey
       translate: @translate
+      modify: @modify
       load: (ns, languages, cb) =>
         @i18n.express.load(ns, languages)(@req, @res, cb)
 
-    Object.defineProperty @req.i18n, 'language',
-      get: () => _language
-      set: (v) =>
-        prev = _language
-        _language = v
-        if prev != _language
-          @setCookie()
-          @emit 'languageChange', _language
+    bindLanguage = (obj, prop) =>
+      Object.defineProperty obj, prop,
+        get: () => _language
+        set: (v) =>
+          prev = _language
+          _language = v
+          if prev != _language
+            @setCookie()
+            @emit 'languageChange', _language
 
-    @req.i18n.lang = @req.i18n.language
+    bindLanguage @req.i18n, 'language'
+    bindLanguage @req.i18n, 'lang'
+
+    locals =
+      i18n: {}
+    bindLanguage locals.i18n, 'language'
+    @res.locals locals
 
     if @options.preload_namespaces.length and @options.preload_languages.length
       return preload @i18n, @options.preload_namespaces, @options.preload_languages, () =>
@@ -86,6 +102,14 @@ class I18nExpress extends EventEmitter
       args = [@req.i18n.language].concat(args)
 
     @i18n.translate.apply(@i18n, args)
+
+  modify: (key, value, cb) =>
+    args = _.toArray(arguments)
+    cb = args.pop()
+    value = args.pop()
+    key = parseTranslationKey(args[0])
+
+    @i18n.modify.apply @i18n, key.concat([ value, cb ])
 
   defineLanguage: () =>
     lang = null
@@ -165,6 +189,8 @@ module.exports = (options) ->
 
       (req, res, next) ->
         lngs = languages or req.i18n.language or options.supported_languages
+        if lngs == '*'
+          lngs = options.supported_languages
         lngs = [ lngs ] unless _.isArray(lngs)
 
         loadLanguages = (ns, done) ->

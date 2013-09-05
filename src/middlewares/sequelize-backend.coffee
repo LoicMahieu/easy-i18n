@@ -1,8 +1,15 @@
 
+_ = require 'lodash'
+
+
 class Backend
-  constructor: (@_model, @_i18n, @_options = {}) ->
-    @_i18n.on 'change', @saveChange
+  constructor: (@_model, @_i18n, _options = {}) ->
+    @_options = _.extend
+      save_missing: true
+    , _options
+    @_i18n.on 'modify', @saveModify
     @_i18n.on 'translate', @increment if @_options.increment
+    @_i18n.on 'missing', @saveMissing if @_options.save_missing
 
   _findAll: (language, ns, key) ->
     where =
@@ -39,7 +46,7 @@ class Backend
 
       cb(null, res)
 
-  saveChange: (language, ns, key, value) =>
+  saveModify: (language, ns, key, value) =>
     @_find(language, ns, key).done (err, model) =>
       return @_catchError err if err
 
@@ -51,6 +58,19 @@ class Backend
         )
 
       model.value = value
+      model.save().done @_catchError
+
+  saveMissing: (language, ns, key) =>
+    @_find(language, ns, key).done (err, model) =>
+      return @_catchError err if err
+      
+      return if model
+      
+      model = @_model.build
+        language: language
+        namespace: ns
+        key: key
+        value: ''
       model.save().done @_catchError
 
   dispose: ->

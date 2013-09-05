@@ -49,6 +49,8 @@ class I18n extends events.EventEmitter
     @backend.load language, ns, (err, resources) =>
       return cb(err) if err
 
+      @logger.debug "Loaded #{language}/#{ns}", resources
+
       @namespaces[ns] = {} unless @namespaces[ns]
       @namespaces[ns][language] = {} unless @namespaces[ns][language]
       @namespaces[ns][language] = resources
@@ -73,7 +75,7 @@ class I18n extends events.EventEmitter
     @emit 'missing', language, ns, key
     language + '/' + ns + ':' + key
 
-  change: (language, ns, key, value, propagateEvent = true, cb = noop) ->
+  modify: (language, ns, key, value, propagateEvent = true, cb = noop) ->
     if typeof propagateEvent == 'function'
       cb = propagateEvent
       propagateEvent = true
@@ -84,7 +86,7 @@ class I18n extends events.EventEmitter
         return cb(err)
       
       @namespaces[ns][language][key] = value
-      @emit 'change', language, ns, key, value if propagateEvent
+      @emit 'modify', language, ns, key, value if propagateEvent
       
       cb(null)
     @
