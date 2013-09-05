@@ -1,5 +1,6 @@
 
 _ = require 'lodash'
+async = require 'async'
 
 
 class Backend
@@ -10,6 +11,7 @@ class Backend
     @_i18n.on 'modify', @saveModify
     @_i18n.on 'translate', @increment if @_options.increment
     @_i18n.on 'missing', @saveMissing if @_options.save_missing
+    @_queues = {}
 
   _findAll: (language, ns, key) ->
     where =
@@ -47,31 +49,36 @@ class Backend
       cb(null, res)
 
   saveModify: (language, ns, key, value) =>
-    @_find(language, ns, key).done (err, model) =>
-      return @_catchError err if err
-
-      unless model
-        model = @_model.build(
-          namespace: ns
-          language: language
-          key: key
-        )
-
-      model.value = value
-      model.save().done @_catchError
+    queue = @_createSaveQueue(language, ns, key)
+    queue.push(value: value, @_catchError)
 
   saveMissing: (language, ns, key) =>
-    @_find(language, ns, key).done (err, model) =>
-      return @_catchError err if err
-      
-      return if model
-      
-      model = @_model.build
-        language: language
-        namespace: ns
-        key: key
-        value: ''
-      model.save().done @_catchError
+    queue = @_createSaveQueue(language, ns, key)
+    queue.push(value: '', @_catchError)
+
+  _createSaveQueue: (language, ns, key) =>
+    unless @_queues[language + ns + key]
+      q = async.queue (task, cb) =>
+        @_find(language, ns, key).done (err, model) =>
+          return @_catchError err, cb if err
+          
+          unless model
+            model = @_model.build(
+              namespace: ns
+              language: language
+              key: key
+            )
+
+          model.value = task.value
+          model.save().done cb
+      , 1
+
+      # Delete queue when all tasks are processed
+      q.drain = () => delete @_queues[language + ns + key]
+
+      @_queues[language + ns + key] = q
+    
+    return @_queues[language + ns + key]
 
   dispose: ->
     # todo: sequelize stop
