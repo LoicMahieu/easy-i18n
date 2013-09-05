@@ -84,9 +84,13 @@ class I18n extends events.EventEmitter
       if err
         @logger.warn err
         return cb(err)
-      
-      @namespaces[ns][language][key] = value
-      @emit 'modify', language, ns, key, value if propagateEvent
+
+      if @namespaces[ns][language][key] != value
+        @namespaces[ns][language][key] = value
+        @emit 'modify', language, ns, key, value if propagateEvent
+        @logger.debug('Modification', ns, language, key, value)
+      else
+        @logger.debug('Skipping modification', ns, language, key, value)
       
       cb(null)
     @

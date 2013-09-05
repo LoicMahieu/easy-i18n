@@ -7,25 +7,32 @@ class Sync
     @_sub = @_options.subClient || require('redis').createClient()
 
     @_sub.on 'message', @onMessage
-    @_i18n.on 'change', @onChange
+    @_i18n.on 'modify', @onModify
 
     @_sub.subscribe @_options.channel
 
-  onChange: (language, namespace, key, value) =>
-    @_pub.publish @_options.channel, JSON.stringify(
+  onModify: (language, namespace, key, value) =>
+    message =
       namespace: namespace
       language: language
       key: key
       value: value
+
+    @_i18n.logger.debug(
+      "Redis: publish change on channel: #{@_options.channel} with message: ", message
     )
+    @_pub.publish @_options.channel, JSON.stringify(message)
 
   onMessage: (channel, message) =>
-    resourceChange = JSON.parse(message)
-    @_i18n.change(
-      resourceChange.language,
-      resourceChange.namespace,
-      resourceChange.key,
-      resourceChange.value,
+    resourceModify = JSON.parse(message)
+    @_i18n.logger.debug(
+      "Redis: receive change on channel: #{@_options.channel} with message: ", resourceModify
+    )
+    @_i18n.modify(
+      resourceModify.language,
+      resourceModify.namespace,
+      resourceModify.key,
+      resourceModify.value,
       false
     )
 
