@@ -53,8 +53,9 @@ class Backend
     queue.push(value: value, @_catchError)
 
   saveMissing: (language, ns, key) =>
+    @_i18n.logger.debug("Save missing for #{language}/#{ns}:#{key}")
     queue = @_createSaveQueue(language, ns, key)
-    queue.push(value: '', @_catchError)
+    queue.push(value: '', exitOnExist: true, @_catchError)
 
   _createSaveQueue: (language, ns, key) =>
     unless @_queues[language + ns + key]
@@ -62,7 +63,10 @@ class Backend
         @_find(language, ns, key).done (err, model) =>
           return @_catchError err, cb if err
           
-          unless model
+          if model and task.exitOnExist
+            return cb()
+
+          unless model or model.value
             model = @_model.build(
               namespace: ns
               language: language
