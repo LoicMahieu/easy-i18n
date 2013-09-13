@@ -135,7 +135,7 @@ class I18nExpress extends EventEmitter
     @req.i18n.language = lang
 
   bestLanguage: () ->
-    lang = @resolveCookie() || @resolveAcceptLanguage()
+    lang = @resolveCookie() || @resolveAcceptLanguage() || @options.supported_languages[0]
 
   setCookie: () =>
     unless @options.cookie_name and @res.cookie
