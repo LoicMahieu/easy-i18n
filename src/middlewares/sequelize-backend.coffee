@@ -66,7 +66,7 @@ class Backend
           if model and task.exitOnExist
             return cb()
 
-          unless model or model.value
+          unless model
             model = @_model.build(
               namespace: ns
               language: language
