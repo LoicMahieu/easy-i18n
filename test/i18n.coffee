@@ -11,7 +11,7 @@ describe 'i18n', () ->
     i18n.should.be.a('object')
     i18n.load.should.be.a('function')
     i18n.translate.should.be.a('function')
-    i18n.change.should.be.a('function')
+    i18n.modify.should.be.a('function')
 
     done()
 

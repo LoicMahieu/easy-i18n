@@ -52,10 +52,18 @@ class Backend
     queue = @_createSaveQueue(language, ns, key)
     queue.push(value: value, @_catchError)
 
-  saveMissing: (language, ns, key) =>
+  saveMissing: (language, ns, key, options) =>
     @_i18n.logger.debug("Save missing for #{language}/#{ns}:#{key}")
     queue = @_createSaveQueue(language, ns, key)
-    queue.push(value: '', exitOnExist: true, @_catchError)
+
+    value = ''
+    if options.missing
+      if typeof options.missing == 'object'
+        value = options.missing[language] if options.missing[language]
+      else
+        value = options.missing
+
+    queue.push(value: value, exitOnExist: true, @_catchError)
 
   _createSaveQueue: (language, ns, key) =>
     unless @_queues[language + ns + key]

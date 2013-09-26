@@ -13,6 +13,7 @@ class I18n extends events.EventEmitter
   @loggerConsole = require './middlewares/logger-console'
   @express = require './middlewares/express'
   @fallback = require './middlewares/fallback-translate'
+  @mustache = require './middlewares/mustache'
 
   ## Language detection
   detection = require './detection'
@@ -60,19 +61,24 @@ class I18n extends events.EventEmitter
     @
 
   translate: (language, ns, key, options = {}) ->
-    options.missing = true unless options.missing == false
-
     res = @namespaces[ns]?[language]?[key]
 
     @emit 'translate', language, ns, key, res if res
 
-    if res or not options.missing
-      return res
+    if res
+      return @formatTranslation(res, options)
     else
-      return @missing(language, ns, key)
+      return @missing(language, ns, key, options)
 
-  missing: (language, ns, key) ->
-    @emit 'missing', language, ns, key
+  missing: (language, ns, key, options = {}) ->
+    @emit 'missing', language, ns, key, options
+
+    if options.missing
+      if typeof options.missing == 'object'
+        return options.missing[language] if options.missing[language]
+      else
+        return options.missing
+    
     language + '/' + ns + ':' + key
 
   modify: (language, ns, key, value, propagateEvent = true, cb = noop) ->
@@ -94,6 +100,10 @@ class I18n extends events.EventEmitter
       
       cb(null)
     @
+
+  formatTranslation: (translation, options) ->
+    # Must be overwritten by a middlewre
+    translation
 
   dispose: ->
     @emit 'dispose'

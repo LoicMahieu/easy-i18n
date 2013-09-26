@@ -92,14 +92,21 @@ class I18nExpress extends EventEmitter
     @defineLanguage()
     @next()
 
-  translate: (key) =>
+  translate: () =>
     args = _.toArray(arguments)
+
+    if typeof args[args.length - 1] == 'object'
+      options = args.pop()
+    else
+      options = {}
 
     if args.length == 1
       args = parseTranslationKey(args[0], @req.i18n.language)
 
     if args.length == 2
       args = [@req.i18n.language].concat(args)
+
+    args.push options
 
     @i18n.translate.apply(@i18n, args)
 
