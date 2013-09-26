@@ -21,3 +21,15 @@ describe 'i18n', () ->
     i18n.translate('fr', 'ns', 'awesome', it: 'Node.js').should.equal('Node.js est énorme!')
     i18n.translate('en', 'ns', 'more', sub: value: 'should').should.equal('should be correct')
     done()
+
+  it 'Format missing', (done) ->
+    i18n = new I18n()
+      .use(I18n.mustache())
+
+    i18n.translate('en', 'ns', 'awesome',
+      missing:
+        en: 'Its the {{def}}'
+      def: 'default'
+    ).should.equal('Its the default')
+
+    done()

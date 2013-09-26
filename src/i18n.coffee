@@ -75,9 +75,9 @@ class I18n extends events.EventEmitter
 
     if options.missing
       if typeof options.missing == 'object'
-        return options.missing[language] if options.missing[language]
+        return @formatTranslation(options.missing[language], options) if options.missing[language]
       else
-        return options.missing
+        return @formatTranslation(options.missing, options)
     
     language + '/' + ns + ':' + key
 
