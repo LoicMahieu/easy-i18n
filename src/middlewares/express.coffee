@@ -22,7 +22,7 @@ checkUrlLocale = (req, supported_languages) ->
   return if lang is "unknown"
 
   req.url = req.url.replace matches[0], '/'
-  
+
   return lang
 
 preload = (i18n, nss, langs, cb) ->
@@ -45,7 +45,7 @@ parseTranslationKey = (key, defaultLang) ->
   # language/namespace:key
   # namespace:key
   keys = key.split ':'
-  
+
   if keys < 2
     throw new Error('Invalid translation key: ', key)
 
@@ -65,11 +65,14 @@ class I18nExpress extends EventEmitter
       modify: @modify
       load: (ns, languages, cb) =>
         @i18n.express.load(ns, languages)(@req, @res, cb)
+      isSupported: (lang) =>
+        detection.isSupported(lang, @options.supported_languages)
 
     bindLanguage = (obj, prop) =>
       Object.defineProperty obj, prop,
         get: () => _language
         set: (v) =>
+          return unless @req.i18n.isSupported(v)
           prev = _language
           _language = v
           if prev != _language
