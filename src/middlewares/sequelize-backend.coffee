@@ -53,7 +53,7 @@ class Backend
     queue.push(value: value, @_catchError)
 
   saveMissing: (language, ns, key, options) =>
-    @_i18n.logger.debug("Save missing for #{language}/#{ns}:#{key}")
+    @_i18n.logger.debug("Save missing for #{language}/#{ns}:#{key}", options)
     queue = @_createSaveQueue(language, ns, key)
 
     value = ''
