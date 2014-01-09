@@ -20,7 +20,7 @@ module.exports =
     langs = raw_langs.map (raw_lang) ->
       parts = raw_lang.split(";")
       q = 1
-      
+
       if parts.length > 1 and parts[1].indexOf("q=") is 0
         qval = parseFloat(parts[1].split("=")[1])
         q = qval if isNaN(qval) is false
@@ -52,7 +52,7 @@ module.exports =
     defaultLanguage
 
   isSupported: (language, supported_languages) ->
-    supported_languages.indexOf(language) > 0
+    supported_languages.indexOf(language) >= 0
 
 
   # Given a language code, return a locale code the OS understands.
@@ -66,13 +66,13 @@ module.exports =
 
     if parts.length is 1
       parts[0].toLowerCase()
-    
+
     else if parts.length is 2
       util.format "%s_%s", parts[0].toLowerCase(), parts[1].toUpperCase()
-    
+
     else if parts.length is 3
       util.format "%s_%s", parts[0].toLowerCase(), parts[2].toUpperCase()
-    
+
     else
       # Todo: don't use directly console
       console.error util.format("Unable to map a local from language code [%s]", language)
@@ -93,7 +93,7 @@ module.exports =
 
     else if parts.length is 3
       util.format "%s-%s", parts[0].toLowerCase(), parts[2].toUpperCase()
-      
+
     else
       # Todo: don't use directly console
       logger.error util.format("Unable to map a language from locale code [%s]", locale)
