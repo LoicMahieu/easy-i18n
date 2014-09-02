@@ -19,7 +19,7 @@ class Backend
       language: language
 
     where.key = key if key
-    
+
     @_model.findAll(where: where)
 
   _find: (language, ns, key) ->
@@ -28,7 +28,7 @@ class Backend
       language: language
 
     where.key = key if key
-    
+
     @_model.find(where: where)
 
   _catchError: (err, cb) =>
@@ -41,7 +41,7 @@ class Backend
       return @_catchError err, cb if err
 
       res = {}
-      
+
       if models
         for model in models
           res[model.key] = model.value
@@ -53,7 +53,9 @@ class Backend
     queue.push(value: value, @_catchError)
 
   saveMissing: (language, ns, key, options) =>
-    @_i18n.logger.debug("Save missing for #{language}/#{ns}:#{key}", options)
+    @_i18n.logger.debug("Save missing for #{language}/#{ns}:#{key}",
+      missing: options.missing
+    )
     queue = @_createSaveQueue(language, ns, key)
 
     value = ''
@@ -70,7 +72,7 @@ class Backend
       q = async.queue (task, cb) =>
         @_find(language, ns, key).done (err, model) =>
           return @_catchError err, cb if err
-          
+
           if model and task.exitOnExist
             return cb()
 
@@ -89,7 +91,7 @@ class Backend
       q.drain = () => delete @_queues[language + ns + key]
 
       @_queues[language + ns + key] = q
-    
+
     return @_queues[language + ns + key]
 
   dispose: ->
