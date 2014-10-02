@@ -3,14 +3,14 @@ module.exports = (sequelize, DataTypes) ->
   sequelize.define "I18n",
     language:
       type: DataTypes.STRING
+      allowNull: false
       validate:
-        notNull: true
         notEmpty: true
 
     key:
       type: DataTypes.STRING
+      allowNull: false
       validate:
-        notNull: true
         notEmpty: true
 
     value:
@@ -18,8 +18,8 @@ module.exports = (sequelize, DataTypes) ->
 
     namespace:
       type: DataTypes.STRING
+      allowNull: false
       validate:
-        notNull: true
         notEmpty: true
 
     used:
