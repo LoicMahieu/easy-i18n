@@ -82,10 +82,13 @@ class I18nExpress extends EventEmitter
     bindLanguage @req.i18n, 'language'
     bindLanguage @req.i18n, 'lang'
 
-    locals =
-      i18n: {}
+    locals = i18n: {}
     bindLanguage locals.i18n, 'language'
-    @res.locals locals
+
+    if _.isFunction @res.locals
+      @res.locals locals
+    else
+      @res.locals.i18n = locals.i18n
 
     if @options.preload_namespaces.length and @options.preload_languages.length
       return preload @i18n, @options.preload_namespaces, @options.preload_languages, () =>
