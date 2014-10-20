@@ -28,9 +28,9 @@ checkUrlLocale = (req, supported_languages) ->
 preload = (i18n, nss, langs, cb) ->
   tasks = []
 
-  nss.forEach (ns) =>
-    langs.forEach (language) =>
-      tasks.push (cb) => i18n.load language, ns, cb
+  nss.forEach (ns) ->
+    langs.forEach (language) ->
+      tasks.push (cb) -> i18n.load language, ns, cb
 
   async.parallel tasks, cb
 
@@ -70,7 +70,7 @@ class I18nExpress extends EventEmitter
 
     bindLanguage = (obj, prop) =>
       Object.defineProperty obj, prop,
-        get: () => _language
+        get: () -> _language
         set: (v) =>
           return unless @req.i18n.isSupported(v)
           prev = _language
@@ -91,7 +91,7 @@ class I18nExpress extends EventEmitter
       @res.locals.i18n = locals.i18n
 
     if @options.preload_namespaces.length and @options.preload_languages.length
-      return preload @i18n, @options.preload_namespaces, @options.preload_languages, () =>
+      return preload @i18n, @options.preload_namespaces, @options.preload_languages, () ->
         @defineLanguage()
         @next()
 
@@ -223,4 +223,3 @@ module.exports = (options) ->
           )
           next()
         )
-
