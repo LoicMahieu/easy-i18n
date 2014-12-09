@@ -65,10 +65,10 @@ class I18n extends events.EventEmitter
 
     @emit 'translate', language, ns, key, res if res
 
-    if res
-      return @formatTranslation(res, options)
-    else
+    if _.isUndefined(res) or _.isNull(res)
       return @missing(language, ns, key, options)
+    else
+      return @formatTranslation(res, options)
 
   missing: (language, ns, key, options = {}) ->
     @emit 'missing', language, ns, key, options
