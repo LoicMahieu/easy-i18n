@@ -37,7 +37,7 @@ class Backend
       cb?(err)
 
   load: (language, ns, cb) ->
-    @_findAll(language, ns).done (err, models) =>
+    @_findAll(language, ns).nodeify (err, models) =>
       return @_catchError err, cb if err
 
       res = {}
@@ -70,7 +70,7 @@ class Backend
   _createSaveQueue: (language, ns, key) =>
     unless @_queues[language + ns + key]
       q = async.queue (task, cb) =>
-        @_find(language, ns, key).done (err, model) =>
+        @_find(language, ns, key).nodeify (err, model) =>
           return @_catchError err, cb if err
 
           if model and task.exitOnExist
@@ -84,7 +84,7 @@ class Backend
             )
 
           model.value = task.value
-          model.save().done cb
+          model.save().nodeify cb
       , 1
 
       # Delete queue when all tasks are processed
@@ -101,9 +101,9 @@ class Backend
     @_options = null
 
   increment: (language, ns, key, value) =>
-    @_find(language, ns, key).done (err, model) =>
+    @_find(language, ns, key).nodeify (err, model) =>
       return @_catchError err if err
-      model.increment('used', 1).done @_catchError if model
+      model.increment('used', 1).nodeify @_catchError if model
 
 module.exports = (sequelize, options) ->
   (i18n) ->
